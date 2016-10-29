@@ -1,0 +1,161 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminLogin": {
+      "type": "string",
+      "minLength": 1
+    },
+    "adminLoginPassword": {
+      "type": "securestring"
+    },
+    "databaseCollation": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+    },
+    "databaseEdition": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ]
+    },
+    "databaseRequestedServiceObjectiveName": {
+      "type": "string",
+      "defaultValue": "S2",
+      "allowedValues": [
+        "Basic",
+        "S0",
+        "S1",
+        "S2",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "metadata": {
+        "description": "Describes the performance level for Edition"
+      }
+    }
+  },
+  "variables": {
+    "coreDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Core')]",
+    "masterDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Master')]",
+    "analyticsDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Analytics')]",
+    "webDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Web')]",
+    "serverName": "[resourceGroup().name]",
+    "databasePrefixName": "[resourceGroup().name]"
+  },
+  "resources": [
+    {
+      "name": "[variables('serverName')]",
+      "type": "Microsoft.Sql/servers",
+      "kind": "v12.0",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "tags": {
+        "displayName": "database-server"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('adminLogin')]",
+        "administratorLoginPassword": "[parameters('adminLoginPassword')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "name": "[variables('coreDatabaseName')]",
+      "kind": "v12.0",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+      ],
+      "tags": {
+        "displayName": "core-database"
+      },
+      "properties": {
+        "collation": "[parameters('databaseCollation')]",
+        "edition": "[parameters('databaseEdition')]",
+        "maxSizeBytes": "1073741824",
+        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "name": "[variables('masterDatabaseName')]",
+      "kind": "v12.0",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+      ],
+      "tags": {
+        "displayName": "master-database"
+      },
+      "properties": {
+        "collation": "[parameters('databaseCollation')]",
+        "edition": "[parameters('databaseEdition')]",
+        "maxSizeBytes": "1073741824",
+        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "name": "[variables('analyticsDatabaseName')]",
+      "kind": "v12.0",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+      ],
+      "tags": {
+        "displayName": "analytics-database"
+      },
+      "properties": {
+        "collation": "[parameters('databaseCollation')]",
+        "edition": "[parameters('databaseEdition')]",
+        "maxSizeBytes": "1073741824",
+        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "name": "[variables('webDatabaseName')]",
+      "kind": "v12.0",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+      ],
+      "tags": {
+        "displayName": "web-database"
+      },
+      "properties": {
+        "collation": "[parameters('databaseCollation')]",
+        "edition": "[parameters('databaseEdition')]",
+        "maxSizeBytes": "1073741824",
+        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "name": "[concat(variables('serverName'), '/', 'AllowAllWindowsAzureIps')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+      ],
+      "tags": {
+        "displayName": "microsoft-azure-ips"
+      },
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      }
+    }
+  ],
+  "outputs": {
+  }
+}
