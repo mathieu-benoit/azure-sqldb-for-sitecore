@@ -1,0 +1,1 @@
+# azure-sqldb-for-sitecore
