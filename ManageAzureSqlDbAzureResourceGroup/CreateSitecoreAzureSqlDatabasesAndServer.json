@@ -147,9 +147,6 @@
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
       ],
-      "tags": {
-        "displayName": "microsoft-azure-ips"
-      },
       "properties": {
         "startIpAddress": "0.0.0.0",
         "endIpAddress": "0.0.0.0"
