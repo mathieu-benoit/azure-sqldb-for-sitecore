@@ -23,21 +23,17 @@
         "Premium"
       ]
     },
-    "databaseRequestedServiceObjectiveName": {
-      "type": "string",
-      "defaultValue": "S2",
-      "allowedValues": [
-        "Basic",
-        "S0",
-        "S1",
-        "S2",
-        "P1",
-        "P2",
-        "P3"
-      ],
-      "metadata": {
-        "description": "Describes the performance level for Edition"
-      }
+    "elasticPoolDtu": {
+      "type": "int",
+      "defaultValue": 100
+    },
+    "elasticPoolDatabaseDtuMin": {
+      "type": "int",
+      "defaultValue": 0
+    },
+    "elasticPoolDatabaseDtuMax": {
+      "type": "int",
+      "defaultValue": 100
     }
   },
   "variables": {
@@ -45,8 +41,15 @@
     "masterDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Master')]",
     "analyticsDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Analytics')]",
     "webDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Web')]",
+    "databases": [
+      "[variables('coreDatabaseName')]",
+      "[variables('masterDatabaseName')]",
+      "[variables('analyticsDatabaseName')]",
+      "[variables('webDatabaseName')]"
+    ],
     "serverName": "[resourceGroup().name]",
-    "databasePrefixName": "[resourceGroup().name]"
+    "databasePrefixName": "[resourceGroup().name]",
+    "elasticPoolName": "[resourceGroup().name]"
   },
   "resources": [
     {
@@ -64,79 +67,40 @@
       }
     },
     {
-      "type": "Microsoft.Sql/servers/databases",
-      "name": "[variables('coreDatabaseName')]",
-      "kind": "v12.0",
+      "name": "[concat(variables('serverName'), '/', variables('elasticPoolName'))]",
       "location": "[resourceGroup().location]",
+      "type": "Microsoft.Sql/servers/elasticpools",
       "apiVersion": "2014-04-01-preview",
+      "tags": {
+        "displayName": "elastic-pool"
+      },
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
       ],
-      "tags": {
-        "displayName": "core-database"
-      },
       "properties": {
-        "collation": "[parameters('databaseCollation')]",
         "edition": "[parameters('databaseEdition')]",
-        "maxSizeBytes": "1073741824",
-        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
+        "dtu": "[parameters('elasticPoolDtu')]",
+        "databaseDtuMin": "[parameters('elasticPoolDatabaseDtuMin')]",
+        "databaseDtuMax": "[parameters('elasticPoolDatabaseDtuMax')]"
       }
     },
     {
       "type": "Microsoft.Sql/servers/databases",
-      "name": "[variables('masterDatabaseName')]",
+      "name": "[variables('databases')[copyIndex()]]",
       "kind": "v12.0",
       "location": "[resourceGroup().location]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]",
+        "[concat('Microsoft.Sql/servers/', variables('serverName') ,'/elasticpools/', variables('elasticPoolName'))]"
       ],
-      "tags": {
-        "displayName": "master-database"
-      },
       "properties": {
         "collation": "[parameters('databaseCollation')]",
-        "edition": "[parameters('databaseEdition')]",
-        "maxSizeBytes": "1073741824",
-        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
-      }
-    },
-    {
-      "type": "Microsoft.Sql/servers/databases",
-      "name": "[variables('analyticsDatabaseName')]",
-      "kind": "v12.0",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2014-04-01-preview",
-      "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
-      ],
-      "tags": {
-        "displayName": "analytics-database"
+        "elasticPoolName": "[variables('elasticPoolName')]"
       },
-      "properties": {
-        "collation": "[parameters('databaseCollation')]",
-        "edition": "[parameters('databaseEdition')]",
-        "maxSizeBytes": "1073741824",
-        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
-      }
-    },
-    {
-      "type": "Microsoft.Sql/servers/databases",
-      "name": "[variables('webDatabaseName')]",
-      "kind": "v12.0",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2014-04-01-preview",
-      "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
-      ],
-      "tags": {
-        "displayName": "web-database"
-      },
-      "properties": {
-        "collation": "[parameters('databaseCollation')]",
-        "edition": "[parameters('databaseEdition')]",
-        "maxSizeBytes": "1073741824",
-        "requestedServiceObjectiveName": "[parameters('databaseRequestedServiceObjectiveName')]"
+      "copy": {
+        "name": "addExistingDatabasesToElasticPool",
+        "count": "[length(variables('databases'))]"
       }
     },
     {

@@ -1,10 +1,10 @@
 Param(
-    [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
+    [string] $ResourceGroupLocation = 'East US',
     [string] [Parameter(Mandatory=$true)] $ResourceGroupName,
     [string] $TemplateFile = 'CreateSitecoreAzureSqlDatabasesAndServer.json'
 )
 
-Login-AzureRmAccount
+#Login-AzureRmAccount
 #Select-AzureSubscription "MySubscription"
 New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation
 New-AzureRmResourceGroupDeployment -Name $ResourceGroupName `
