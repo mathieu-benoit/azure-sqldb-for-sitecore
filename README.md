@@ -1,4 +1,4 @@
-This sample allows to create the 4 empty Azure Sql Databases. It's dedicated to create the 4 required (at least) databases for Sitecore but could be adapted for other considerations.
+ This sample allows to create the 4 empty Azure Sql Databases on an Elastic Pool by ARM Template deployment. It's dedicated to create the 4 required (at least) databases for Sitecore but could be adapted for other considerations.
 
 Furthermore, this sample is part of [one of my blog about restoring the 4 Sitecore databases via Visual Studio Team Services](https://alwaysupalwayson.blogspot.ca/2016/09/use-azure-sql-database-deployment-task.html).
 
