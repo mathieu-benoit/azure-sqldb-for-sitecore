@@ -2,6 +2,35 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "serverName": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "[resourceGroup().name]"
+    },
+    "databasePrefixName": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "[resourceGroup().name]"
+    },
+    "elasticPoolName": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "[resourceGroup().name]"
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "Brazil South",
+        "East US",
+        "East US 2",
+        "Central US",
+        "North Central US",
+        "South Central US",
+        "West US",
+        "West US 2"
+      ],
+      "defaultValue": "[resourceGroup().location]"
+    },
     "adminLogin": {
       "type": "string",
       "minLength": 1
@@ -37,26 +66,23 @@
     }
   },
   "variables": {
-    "coreDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Core')]",
-    "masterDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Master')]",
-    "analyticsDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Analytics')]",
-    "webDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Web')]",
+    "coreDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Core')]",
+    "masterDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Master')]",
+    "analyticsDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Analytics')]",
+    "webDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Web')]",
     "databases": [
       "[variables('coreDatabaseName')]",
       "[variables('masterDatabaseName')]",
       "[variables('analyticsDatabaseName')]",
       "[variables('webDatabaseName')]"
-    ],
-    "serverName": "[resourceGroup().name]",
-    "databasePrefixName": "[resourceGroup().name]",
-    "elasticPoolName": "[resourceGroup().name]"
+    ]
   },
   "resources": [
     {
-      "name": "[variables('serverName')]",
+      "name": "[parameters('serverName')]",
       "type": "Microsoft.Sql/servers",
       "kind": "v12.0",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "apiVersion": "2014-04-01-preview",
       "tags": {
         "displayName": "database-server"
@@ -67,15 +93,15 @@
       }
     },
     {
-      "name": "[concat(variables('serverName'), '/', variables('elasticPoolName'))]",
-      "location": "[resourceGroup().location]",
+      "name": "[concat(parameters('serverName'), '/', parameters('elasticPoolName'))]",
+      "location": "[parameters('location')]",
       "type": "Microsoft.Sql/servers/elasticpools",
       "apiVersion": "2014-04-01-preview",
       "tags": {
         "displayName": "elastic-pool"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
       ],
       "properties": {
         "edition": "[parameters('databaseEdition')]",
@@ -88,15 +114,15 @@
       "type": "Microsoft.Sql/servers/databases",
       "name": "[variables('databases')[copyIndex()]]",
       "kind": "v12.0",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]",
-        "[concat('Microsoft.Sql/servers/', variables('serverName') ,'/elasticpools/', variables('elasticPoolName'))]"
+        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]",
+        "[concat('Microsoft.Sql/servers/', parameters('serverName') ,'/elasticpools/', parameters('elasticPoolName'))]"
       ],
       "properties": {
         "collation": "[parameters('databaseCollation')]",
-        "elasticPoolName": "[variables('elasticPoolName')]"
+        "elasticPoolName": "[parameters('elasticPoolName')]"
       },
       "copy": {
         "name": "addExistingDatabasesToElasticPool",
@@ -105,11 +131,11 @@
     },
     {
       "type": "Microsoft.Sql/servers/firewallRules",
-      "name": "[concat(variables('serverName'), '/', 'AllowAllWindowsAzureIps')]",
-      "location": "[resourceGroup().location]",
+      "name": "[concat(parameters('serverName'), '/', 'AllowAllWindowsAzureIps')]",
+      "location": "[parameters('location')]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
       ],
       "properties": {
         "startIpAddress": "0.0.0.0",
@@ -117,6 +143,5 @@
       }
     }
   ],
-  "outputs": {
-  }
+  "outputs": {}
 }
