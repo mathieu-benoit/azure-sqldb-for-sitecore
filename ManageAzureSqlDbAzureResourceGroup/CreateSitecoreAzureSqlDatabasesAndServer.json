@@ -17,20 +17,6 @@
       "minLength": 1,
       "defaultValue": "[resourceGroup().name]"
     },
-    "location": {
-      "type": "string",
-      "allowedValues": [
-        "Brazil South",
-        "East US",
-        "East US 2",
-        "Central US",
-        "North Central US",
-        "South Central US",
-        "West US",
-        "West US 2"
-      ],
-      "defaultValue": "[resourceGroup().location]"
-    },
     "adminLogin": {
       "type": "string",
       "minLength": 1
@@ -75,14 +61,15 @@
       "[variables('masterDatabaseName')]",
       "[variables('analyticsDatabaseName')]",
       "[variables('webDatabaseName')]"
-    ]
+    ],
+    "location": "[resourceGroup().location]"
   },
   "resources": [
     {
       "name": "[parameters('serverName')]",
       "type": "Microsoft.Sql/servers",
       "kind": "v12.0",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "apiVersion": "2014-04-01-preview",
       "tags": {
         "displayName": "database-server"
@@ -94,7 +81,7 @@
     },
     {
       "name": "[concat(parameters('serverName'), '/', parameters('elasticPoolName'))]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "type": "Microsoft.Sql/servers/elasticpools",
       "apiVersion": "2014-04-01-preview",
       "tags": {
@@ -114,7 +101,7 @@
       "type": "Microsoft.Sql/servers/databases",
       "name": "[variables('databases')[copyIndex()]]",
       "kind": "v12.0",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]",
@@ -132,7 +119,7 @@
     {
       "type": "Microsoft.Sql/servers/firewallRules",
       "name": "[concat(parameters('serverName'), '/', 'AllowAllWindowsAzureIps')]",
-      "location": "[parameters('location')]",
+      "location": "[variables('location')]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
