@@ -2,21 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "serverName": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "[resourceGroup().name]"
-    },
-    "databasePrefixName": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "[resourceGroup().name]"
-    },
-    "elasticPoolName": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "[resourceGroup().name]"
-    },
     "adminLogin": {
       "type": "string",
       "minLength": 1
@@ -52,21 +37,24 @@
     }
   },
   "variables": {
-    "coreDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Core')]",
-    "masterDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Master')]",
-    "analyticsDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Analytics')]",
-    "webDatabaseName": "[concat(parameters('serverName'), '/', parameters('databasePrefixName'), '_Sitecore_Web')]",
+    "coreDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Core')]",
+    "masterDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Master')]",
+    "analyticsDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Analytics')]",
+    "webDatabaseName": "[concat(variables('serverName'), '/', variables('databasePrefixName'), '_Sitecore_Web')]",
     "databases": [
       "[variables('coreDatabaseName')]",
       "[variables('masterDatabaseName')]",
       "[variables('analyticsDatabaseName')]",
       "[variables('webDatabaseName')]"
     ],
-    "location": "[resourceGroup().location]"
+    "location": "[resourceGroup().location]",
+    "serverName": "[resourceGroup().name]",
+    "databasePrefixName": "[resourceGroup().name]",
+    "elasticPoolName": "[resourceGroup().name]"
   },
   "resources": [
     {
-      "name": "[parameters('serverName')]",
+      "name": "[variables('serverName')]",
       "type": "Microsoft.Sql/servers",
       "kind": "v12.0",
       "location": "[variables('location')]",
@@ -80,7 +68,7 @@
       }
     },
     {
-      "name": "[concat(parameters('serverName'), '/', parameters('elasticPoolName'))]",
+      "name": "[concat(variables('serverName'), '/', variables('elasticPoolName'))]",
       "location": "[variables('location')]",
       "type": "Microsoft.Sql/servers/elasticpools",
       "apiVersion": "2014-04-01-preview",
@@ -88,7 +76,7 @@
         "displayName": "elastic-pool"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
       ],
       "properties": {
         "edition": "[parameters('databaseEdition')]",
@@ -104,12 +92,12 @@
       "location": "[variables('location')]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]",
-        "[concat('Microsoft.Sql/servers/', parameters('serverName') ,'/elasticpools/', parameters('elasticPoolName'))]"
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]",
+        "[concat('Microsoft.Sql/servers/', variables('serverName') ,'/elasticpools/', variables('elasticPoolName'))]"
       ],
       "properties": {
         "collation": "[parameters('databaseCollation')]",
-        "elasticPoolName": "[parameters('elasticPoolName')]"
+        "elasticPoolName": "[variables('elasticPoolName')]"
       },
       "copy": {
         "name": "addExistingDatabasesToElasticPool",
@@ -118,11 +106,11 @@
     },
     {
       "type": "Microsoft.Sql/servers/firewallRules",
-      "name": "[concat(parameters('serverName'), '/', 'AllowAllWindowsAzureIps')]",
+      "name": "[concat(variables('serverName'), '/', 'AllowAllWindowsAzureIps')]",
       "location": "[variables('location')]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
       ],
       "properties": {
         "startIpAddress": "0.0.0.0",
