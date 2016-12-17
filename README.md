@@ -8,4 +8,4 @@ The project/folder "ManageAzureSqlDatabasesAzureResourceGroup" consists on 2 fil
 
 If you have an Azure Account you could also use the following button to use the Azure Template Deployment tool (this will just create the Azure services but won't restore the databases. Restoring the dacpacs is part of the VSTS tasks):
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmathieu-benoit%2Fazure-sqldb-for-sitecore%2Fmaster%2FManageAzureSqlDbAzureResourceGroup%2FCreateSitecoreAzureSqlDatabasesAndServer.json" target="_">![Deploy to Azure](http://azuredeploy.net/deploybutton.png)</a> 
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmathieu-benoit%2FAzureUsageAndBillingPortal%2Fmathieu-benoit%2Fdeploy-to-azure-button%2FScripts%2FCreateAzureServicesScriptResources.json" target="_">![Deploy to Azure](http://azuredeploy.net/deploybutton.png)</a> 
